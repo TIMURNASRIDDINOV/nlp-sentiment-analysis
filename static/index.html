@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Solutions Dashboard | Sentiment & Modeling</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body data-theme="dark">
+    <div class="dashboard">
+        <header>
+            <h1>AI Solutions Portfolio</h1>
+            <p class="subtitle">Matnli malumotlarni tahlil qilish va modellashtirish platformasi</p>
+            
+            <div class="tab-nav">
+                <button class="tab-btn active" data-tab="sentiment">🧠 Sentiment Engine</button>
+                <button class="tab-btn" data-tab="modeling">🔢 Modeling Lab (BoW/TF-IDF)</button>
+            </div>
+        </header>
+
+        <!-- Tab 1: Sentiment Analysis -->
+        <main id="sentiment-view" class="tool-view active">
+            <section class="glass-card">
+                <div class="input-area">
+                    <label for="sentiment-input">Tahlil uchun matn kiriting</label>
+                    <textarea id="sentiment-input" rows="6" placeholder="Har bir gapni yangi qatordan yozing..."></textarea>
+                    
+                    <div class="controls">
+                        <div class="option">
+                            <label for="top-k">Top-K:</label>
+                            <select id="top-k">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                            </select>
+                        </div>
+                        <button id="btn-sentiment" class="btn-primary">Tahlil qilish</button>
+                    </div>
+                </div>
+
+                <div id="sentiment-loader" class="loader hidden">
+                    <div class="spinner"></div>
+                    <span>AI tahlil qilmoqda...</span>
+                </div>
+
+                <div id="sentiment-results" class="result-list hidden"></div>
+                <div id="sentiment-elapsed" class="elapsed hidden"></div>
+            </section>
+        </main>
+
+        <!-- Tab 2: BoW & TF-IDF Modeling -->
+        <main id="modeling-view" class="tool-view">
+            <section class="glass-card">
+                <div class="input-area">
+                    <label>Hujjatlar to'plamini kiriting (Modellashtirish uchun)</label>
+                    <div id="docs-container" class="doc-inputs">
+                        <textarea placeholder="1-hujjat...">O'zbekiston - kelajagi buyuk davlat.</textarea>
+                        <textarea placeholder="2-hujjat...">Toshkent - O'zbekistonning poytaxti.</textarea>
+                    </div>
+                    
+                    <div class="controls">
+                        <button id="btn-add-doc" class="btn-secondary" style="background: transparent; border: 1px solid var(--border-glass); color: var(--text); padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;">+ Hujjat qo'shish</button>
+                        <div class="option">
+                            <label>Usul:</label>
+                            <select id="method-select">
+                                <option value="tfidf">TF-IDF</option>
+                                <option value="bow">Bag of Words (BoW)</option>
+                            </select>
+                        </div>
+                        <button id="btn-modeling" class="btn-primary">Modellashtirish</button>
+                    </div>
+                </div>
+
+                <div id="modeling-loader" class="loader hidden">
+                    <div class="spinner"></div>
+                    <span>Vektorizatsiya jarayoni...</span>
+                </div>
+
+                <div id="modeling-results-container" class="hidden">
+                    <h3 style="margin-top: 2rem;">Natijaviy matritsa (<span id="current-method-lbl">TF-IDF</span>)</h3>
+                    <div class="table-scroll">
+                        <table id="modeling-table">
+                            <thead><tr id="table-header"></tr></thead>
+                            <tbody id="table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <div id="system-status">
+                <span id="model-info">Tizim yuklanmoqda...</span>
+                <button id="theme-toggle" class="tab-btn" style="padding: 0.3rem 0.8rem; font-size: 0.8rem; margin-left: 1rem;">🌙 Rejimni o'zgartirish</button>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

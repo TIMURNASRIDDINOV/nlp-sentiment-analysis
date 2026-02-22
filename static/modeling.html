@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Modeling (BoW & TF-IDF)</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600&display=swap" rel="stylesheet">
+    <style>
+        .modeling-container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .input-group {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 2rem;
+        }
+        .doc-inputs textarea {
+            width: 100%;
+            height: 80px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.8rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            resize: vertical;
+        }
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        select {
+            background: #2a2a2a;
+            color: white;
+            border: 1px solid #444;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+        .table-scroll {
+            overflow-x: auto;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th, td {
+            padding: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+        }
+        th {
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+        }
+        .doc-col {
+            text-align: left;
+            min-width: 200px;
+            position: sticky;
+            left: 0;
+            background: #1a1a1a;
+            z-index: 1;
+        }
+        .val-cell {
+            transition: background 0.3s;
+        }
+        .val-cell:hover {
+            background: rgba(108, 92, 231, 0.3);
+        }
+        .nav-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: #6c5ce7;
+            text-decoration: none;
+        }
+        .btn-add { background: #00b894; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; }
+    </style>
+</head>
+<body class="dark-mode">
+    <div class="modeling-container">
+        <a href="/" class="nav-link">← Sentiment Analyzer ga qaytish</a>
+        <header>
+            <h1>🔢 Matnli ma’lumotlarni modellashtirish</h1>
+            <p>BoW va TF-IDF usullari yordamida vektorizatsiya qilish</p>
+        </header>
+
+        <div class="input-group">
+            <h3>Hujjatlarni kiriting</h3>
+            <div id="docs-container" class="doc-inputs">
+                <textarea placeholder="1-hujjat matni...">O'zbekiston - kelajagi buyuk davlat.</textarea>
+                <textarea placeholder="2-hujjat matni...">Toshkent - O'zbekistonning poytaxti.</textarea>
+            </div>
+            <div class="controls">
+                <button class="btn-add" id="add-doc">+ Hujjat qo'shish</button>
+                <select id="method-select">
+                    <option value="tfidf">TF-IDF</option>
+                    <option value="bow">Bag of Words (BoW)</option>
+                </select>
+                <button class="btn-primary" id="btn-run">Modellashtirish</button>
+            </div>
+        </div>
+
+        <div id="results-section" style="display: none;">
+            <h3>Natijalar: <span id="current-method-label"></span></h3>
+            <div class="table-scroll">
+                <table id="modeling-table">
+                    <thead><tr id="table-header"></tr></thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/modeling.js"></script>
+</body>
+</html>
