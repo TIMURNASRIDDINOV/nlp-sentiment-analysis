@@ -6,7 +6,7 @@ FROM python:3.11-slim AS builder
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt \
+RUN pip install --no-cache-dir --prefix=/install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt \
     && pip install --no-cache-dir --prefix=/install fastapi uvicorn
 
 # ---------------------------------------------------------------------------
