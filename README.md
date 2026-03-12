@@ -1,3 +1,12 @@
+---
+title: NLP Text Modeling & Sentiment Analysis
+emoji: 🧠
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+pinned: false
+---
+
 # NLP Sentiment Analyzer
 
 > Interactive sentiment analysis tool — CLI **and** Web — powered by Hugging Face Transformers.
