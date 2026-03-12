@@ -27,7 +27,9 @@ UZ_STOP_WORDS = {
     "har", "hamma", "shu", "shunday", "bunday", "qanday", "nima", "kim",
     "qayerda", "qachon", "agar", "lekin", "ammo", "yoki", "chunki",
     "ning", "ga", "dan", "ni", "dagi", "dek", "kabi", "orqali",
-    "keyin", "oldin", "shuning", "lar", "bo'lgan",
+    "keyin", "oldin", "shuning", "lar",
+    "bo'lgan", "bo'ladi", "bo'lib", "bo'lsa", "o'z", "o'sha",
+    "ko'p", "ko'ra", "to'g'ri", "bo'yicha", "qo'shma",
 }
 
 EN_STOP_WORDS = {
@@ -51,15 +53,28 @@ STOP_WORDS = UZ_STOP_WORDS | EN_STOP_WORDS
 # ---------------------------------------------------------------------------
 # Step 1 – Tokenization & preprocessing
 # ---------------------------------------------------------------------------
+def _normalize_apostrophes(text: str) -> str:
+    """Normalize curly/typographic apostrophes to straight ones.
+
+    Uzbek Latin uses apostrophe in digraphs: o', g', sh, ch.
+    Texts may contain \u2018 \u2019 \u02BB \u02BC or the standard '.
+    """
+    return re.sub(r"[\u2018\u2019\u02BB\u02BC\u0060\u00B4]", "'", text)
+
+
 def tokenize(
     text: str,
     lowercase: bool = True,
     remove_stopwords: bool = True,
 ) -> List[str]:
-    """Split text into word tokens with optional lowercasing and stop-word removal."""
+    """Split text into word tokens with optional lowercasing and stop-word removal.
+
+    Handles Uzbek apostrophe-containing words like O'zbekiston, bo'lgan, g'arb.
+    """
+    text = _normalize_apostrophes(text)
     if lowercase:
         text = text.lower()
-    tokens = re.findall(r"\b\w+\b", text)
+    tokens = re.findall(r"\b\w+(?:['\u2019]\w+)*\b", text)
     if remove_stopwords:
         tokens = [t for t in tokens if t not in STOP_WORDS]
     return tokens
