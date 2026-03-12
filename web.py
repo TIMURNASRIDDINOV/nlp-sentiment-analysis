@@ -109,7 +109,9 @@ class ModelInfo(BaseModel):
 class ModelingRequest(BaseModel):
     """POST /analyze_modeling request body."""
     texts: List[str] = Field(..., min_length=1)
-    method: str = Field(default="tfidf") # "tfidf" or "bow"
+    method: str = Field(default="tfidf")
+    lowercase: bool = Field(default=True)
+    remove_stopwords: bool = Field(default=True)
 
 class ModelingResultRow(BaseModel):
     text: str
@@ -119,6 +121,9 @@ class ModelingResponse(BaseModel):
     method: str
     features: List[str]
     data: List[ModelingResultRow]
+    steps: dict = Field(default_factory=dict)
+    similarity_matrix: List[List[float]] = Field(default_factory=list)
+    documents: List[str] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -261,7 +266,12 @@ def create_app(
     async def _modeling(body: ModelingRequest):
         """Perform BoW or TF-IDF modeling on a list of documents."""
         try:
-            result = analyze_modeling(body.texts, method=body.method)
+            result = analyze_modeling(
+                body.texts,
+                method=body.method,
+                lowercase=body.lowercase,
+                remove_stopwords=body.remove_stopwords,
+            )
             return ModelingResponse(**result)
         except Exception as exc:
             log.exception("Modeling error")

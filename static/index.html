@@ -3,29 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Solutions Dashboard | Sentiment & Modeling</title>
+    <title>BoW & TF-IDF Modellashtirish | NLP Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
 <body data-theme="dark">
     <div class="dashboard">
         <header>
-            <h1>AI Solutions Portfolio</h1>
-            <p class="subtitle">Matnli malumotlarni tahlil qilish va modellashtirish platformasi</p>
-            
+            <h1>NLP Text Modeling</h1>
+            <p class="subtitle">Matnli ma'lumotlarni BoW va TF-IDF usullari yordamida modellashtirish</p>
+
             <div class="tab-nav">
-                <button class="tab-btn active" data-tab="sentiment">🧠 Sentiment Engine</button>
-                <button class="tab-btn" data-tab="modeling">🔢 Modeling Lab (BoW/TF-IDF)</button>
+                <button class="tab-btn active" data-tab="modeling">Modeling Lab (BoW / TF-IDF)</button>
+                <button class="tab-btn" data-tab="sentiment">Sentiment Engine</button>
             </div>
         </header>
 
-        <!-- Tab 1: Sentiment Analysis -->
-        <main id="sentiment-view" class="tool-view active">
+        <!-- ============================================================ -->
+        <!-- Tab 1: BoW & TF-IDF Modeling (PRIMARY)                       -->
+        <!-- ============================================================ -->
+        <main id="modeling-view" class="tool-view active">
+            <section class="glass-card">
+                <div class="input-area">
+                    <label>Hujjatlar to'plamini kiriting (kamida 2 ta)</label>
+                    <div id="docs-container" class="doc-inputs">
+                        <textarea placeholder="1-hujjat...">O'zbekiston - kelajagi buyuk davlat.</textarea>
+                        <textarea placeholder="2-hujjat...">Toshkent - O'zbekistonning poytaxti.</textarea>
+                        <textarea placeholder="3-hujjat...">O'zbekiston poytaxti Toshkent shahri.</textarea>
+                    </div>
+
+                    <div class="controls">
+                        <button id="btn-add-doc" class="btn-secondary">+ Hujjat</button>
+                        <div class="option-group">
+                            <label class="chk-label"><input type="checkbox" id="chk-lowercase" checked> Kichik harf</label>
+                            <label class="chk-label"><input type="checkbox" id="chk-stopwords" checked> Stop-so'zlar</label>
+                        </div>
+                        <div class="option">
+                            <label>Usul:</label>
+                            <select id="method-select">
+                                <option value="tfidf">TF-IDF</option>
+                                <option value="bow">Bag of Words</option>
+                                <option value="compare">Taqqoslash (BoW vs TF-IDF)</option>
+                            </select>
+                        </div>
+                        <button id="btn-modeling" class="btn-primary">Modellashtirish</button>
+                    </div>
+                </div>
+
+                <div id="modeling-loader" class="loader hidden">
+                    <div class="spinner"></div>
+                    <span>Algoritm ishlayapti...</span>
+                </div>
+
+                <!-- ===== RESULTS ===== -->
+                <div id="modeling-results" class="hidden">
+
+                    <!-- Step 1: Tokenization -->
+                    <div class="step-card">
+                        <div class="step-header"><span class="step-num">01</span><h3>Tokenizatsiya</h3></div>
+                        <p class="step-desc">Matn so'zlarga ajratiladi, kichik harfga o'tkaziladi va stop-so'zlar olib tashlanadi.</p>
+                        <div id="step-tokens"></div>
+                    </div>
+
+                    <!-- Step 2: Vocabulary -->
+                    <div class="step-card">
+                        <div class="step-header"><span class="step-num">02</span><h3>Lug'at (Vocabulary)</h3></div>
+                        <p class="step-desc">Barcha hujjatlardan yig'ilgan noyob so'zlar to'plami (tartiblangan).</p>
+                        <div id="step-vocab"></div>
+                    </div>
+
+                    <!-- Step 3: BoW / TF -->
+                    <div class="step-card" id="step3-card">
+                        <div class="step-header"><span class="step-num">03</span><h3 id="step3-title">So'z chastotasi</h3></div>
+                        <div class="formula-box" id="step3-formula"></div>
+                        <div class="table-scroll"><table><thead><tr id="step3-header"></tr></thead><tbody id="step3-body"></tbody></table></div>
+                    </div>
+
+                    <!-- Step 4: DF & IDF (TF-IDF only) -->
+                    <div class="step-card" id="step4-card">
+                        <div class="step-header"><span class="step-num">04</span><h3>Document Frequency (DF) va IDF</h3></div>
+                        <div class="formula-box">
+                            <code>DF(t) = t so'zi mavjud bo'lgan hujjatlar soni</code><br>
+                            <code>IDF(t) = log(N / DF(t)) + 1</code>&nbsp;&nbsp;(N = jami hujjatlar soni)
+                        </div>
+                        <div class="table-scroll"><table><thead><tr><th>So'z (term)</th><th>DF(t)</th><th>IDF(t)</th></tr></thead><tbody id="step4-body"></tbody></table></div>
+                    </div>
+
+                    <!-- Step 5: TF-IDF raw (TF-IDF only) -->
+                    <div class="step-card" id="step5-card">
+                        <div class="step-header"><span class="step-num">05</span><h3>TF-IDF matritsasi (normalizatsiyadan oldin)</h3></div>
+                        <div class="formula-box"><code>TF-IDF(t, d) = TF(t, d) &times; IDF(t)</code></div>
+                        <div class="table-scroll"><table><thead><tr id="step5-header"></tr></thead><tbody id="step5-body"></tbody></table></div>
+                    </div>
+
+                    <!-- Step 6: Final Matrix -->
+                    <div class="step-card" id="step6-card">
+                        <div class="step-header"><span class="step-num" id="step6-num">06</span><h3>Natijaviy matritsa (<span id="step6-method">TF-IDF</span>)</h3></div>
+                        <div class="formula-box" id="step6-formula"></div>
+                        <div class="table-scroll"><table><thead><tr id="step6-header"></tr></thead><tbody id="step6-body"></tbody></table></div>
+                    </div>
+
+                    <!-- Step 7: Cosine Similarity -->
+                    <div class="step-card" id="step7-card">
+                        <div class="step-header"><span class="step-num" id="step7-num">07</span><h3>Kosinus o'xshashligi (Cosine Similarity)</h3></div>
+                        <div class="formula-box"><code>cos(A, B) = (A &middot; B) / (&Vert;A&Vert; &times; &Vert;B&Vert;)</code></div>
+                        <p class="step-desc">Hujjatlar orasidagi semantik yaqinlikni ko'rsatadi (0 = o'xshash emas, 1 = bir xil).</p>
+                        <div class="table-scroll"><table><thead><tr id="sim-header"></tr></thead><tbody id="sim-body"></tbody></table></div>
+                    </div>
+
+                    <!-- Compare section (compare mode only) -->
+                    <div class="step-card hidden" id="compare-card">
+                        <div class="step-header"><span class="step-num">VS</span><h3>BoW va TF-IDF taqqoslash</h3></div>
+                        <p class="step-desc">Bag of Words oddiy so'z sonini hisoblaydi, TF-IDF esa kamyob so'zlarga ko'proq vazn beradi.</p>
+                        <div class="compare-grid">
+                            <div>
+                                <h4>Bag of Words natijasi</h4>
+                                <div class="table-scroll"><table><thead><tr id="cmp-bow-header"></tr></thead><tbody id="cmp-bow-body"></tbody></table></div>
+                            </div>
+                            <div>
+                                <h4>TF-IDF natijasi</h4>
+                                <div class="table-scroll"><table><thead><tr id="cmp-tfidf-header"></tr></thead><tbody id="cmp-tfidf-body"></tbody></table></div>
+                            </div>
+                        </div>
+                        <div class="compare-grid" style="margin-top:1.5rem">
+                            <div>
+                                <h4>BoW Kosinus o'xshashligi</h4>
+                                <div class="table-scroll"><table><thead><tr id="cmp-bow-sim-h"></tr></thead><tbody id="cmp-bow-sim-b"></tbody></table></div>
+                            </div>
+                            <div>
+                                <h4>TF-IDF Kosinus o'xshashligi</h4>
+                                <div class="table-scroll"><table><thead><tr id="cmp-tfidf-sim-h"></tr></thead><tbody id="cmp-tfidf-sim-b"></tbody></table></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="step-card">
+                        <div class="step-header"><span class="step-num">VIZ</span><h3>Vizualizatsiya</h3></div>
+                        <div class="charts-grid">
+                            <div class="chart-box"><canvas id="chart-freq"></canvas></div>
+                            <div class="chart-box"><canvas id="chart-weights"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- ============================================================ -->
+        <!-- Tab 2: Sentiment Analysis                                    -->
+        <!-- ============================================================ -->
+        <main id="sentiment-view" class="tool-view">
             <section class="glass-card">
                 <div class="input-area">
                     <label for="sentiment-input">Tahlil uchun matn kiriting</label>
                     <textarea id="sentiment-input" rows="6" placeholder="Har bir gapni yangi qatordan yozing..."></textarea>
-                    
+
                     <div class="controls">
                         <div class="option">
                             <label for="top-k">Top-K:</label>
@@ -49,50 +182,10 @@
             </section>
         </main>
 
-        <!-- Tab 2: BoW & TF-IDF Modeling -->
-        <main id="modeling-view" class="tool-view">
-            <section class="glass-card">
-                <div class="input-area">
-                    <label>Hujjatlar to'plamini kiriting (Modellashtirish uchun)</label>
-                    <div id="docs-container" class="doc-inputs">
-                        <textarea placeholder="1-hujjat...">O'zbekiston - kelajagi buyuk davlat.</textarea>
-                        <textarea placeholder="2-hujjat...">Toshkent - O'zbekistonning poytaxti.</textarea>
-                    </div>
-                    
-                    <div class="controls">
-                        <button id="btn-add-doc" class="btn-secondary" style="background: transparent; border: 1px solid var(--border-glass); color: var(--text); padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer;">+ Hujjat qo'shish</button>
-                        <div class="option">
-                            <label>Usul:</label>
-                            <select id="method-select">
-                                <option value="tfidf">TF-IDF</option>
-                                <option value="bow">Bag of Words (BoW)</option>
-                            </select>
-                        </div>
-                        <button id="btn-modeling" class="btn-primary">Modellashtirish</button>
-                    </div>
-                </div>
-
-                <div id="modeling-loader" class="loader hidden">
-                    <div class="spinner"></div>
-                    <span>Vektorizatsiya jarayoni...</span>
-                </div>
-
-                <div id="modeling-results-container" class="hidden">
-                    <h3 style="margin-top: 2rem;">Natijaviy matritsa (<span id="current-method-lbl">TF-IDF</span>)</h3>
-                    <div class="table-scroll">
-                        <table id="modeling-table">
-                            <thead><tr id="table-header"></tr></thead>
-                            <tbody id="table-body"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-        </main>
-
         <footer>
             <div id="system-status">
                 <span id="model-info">Tizim yuklanmoqda...</span>
-                <button id="theme-toggle" class="tab-btn" style="padding: 0.3rem 0.8rem; font-size: 0.8rem; margin-left: 1rem;">🌙 Rejimni o'zgartirish</button>
+                <button id="theme-toggle" class="tab-btn" style="padding:0.3rem 0.8rem;font-size:0.8rem;margin-left:1rem;">Rejimni o'zgartirish</button>
             </div>
         </footer>
     </div>
